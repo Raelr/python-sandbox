@@ -137,6 +137,7 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
-user_storage.json
-user_storage.yaml
-.vscode
+*.json
+*.yaml
+*.vscode
+*.DS_Store

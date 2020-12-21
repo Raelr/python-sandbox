@@ -9,6 +9,7 @@ from storage.user_storage import UserStorage
 from serialisation.serialiser import Serialiser
 from formatting.formatter import Formatter
 import utils.file_utils as utils
+import os
 
 class App():
 
@@ -88,10 +89,12 @@ class App():
         format_type = self.get_user_input('What format would you like the data formatted in (json, yaml, raw, table)? ')
 
         results = self.storage.filter_users(filter_command)
-        if len(results) == 0:
+
+        if len(results) == 0 or results == 'No matching entry found!':
             print('No results found for query: ' + filter_command)
             return
 
+        print(results)
         # Check which data format is needed by the user:
         data = 'ERROR: The Specified format is not supported!'
         if self.serialiser.is_supported(format_type):
@@ -110,6 +113,10 @@ class App():
         # Only write the file if the requested format is supported.
         if self.serialiser.is_supported(data_format):
             data = self.serialiser.serialise(self.storage.get_all_users(), data_format)
+            
+            if not os.path.exists("../data"):
+                os.mkdir('../data')
+
             utils.write_contents_to_file("../data/user_storage." + data_format, data)
             message = 'Saving Data to ' + data_format + ' format'
         

@@ -14,8 +14,14 @@ An application for storing, saving, loading, and dispalying user data.
     - [3.2 UserStorage](#32-userstorage)
     - [3.3 Serialisation](#33-serialisation)
     - [3.4 Formatting](#34-formatting)
-  - [App Architecture](#app-architecture)
-  - [4. Dependencies](#4-dependencies)
+  - [4. App Architecture](#4-app-architecture)
+  - [5. Additional Notes](#5-additional-notes)
+  - [6. Data Formats](#6-data-formats)
+      - [6.1 Table](#61-table)
+      - [6.2 Raw](#62-raw)
+      - [6.3 JSON](#63-json)
+      - [6.4 YAML](#64-yaml)
+  - [7. Dependencies](#7-dependencies)
 
 ## 1. Introduction
 
@@ -95,13 +101,83 @@ The `Formatting` module handles all data formatting needed to return queries to 
 * `get_supported_formats()` - Returns a list of supported formats
 * `format_list(data)` - Takes a list of data and formats it sequentially.
 
-## App Architecture
+## 4. App Architecture
 
 The App's architecure can be visualsed as follows:
 
 <img src="assets/UserStorage.png" alt="Architecture" width="100%" height="100%">
 
-## 4. Dependencies
+## 5. Additional Notes
+
+In order to format data with the `serialiser` and `formatter`, the individual pieces of data must implement the following methods:
+
+`equals(other)` - This method provides a simple equality operator for a class. You can define the equality in whatever way you wish. 
+`to_array()` - Converts the object attributes to an array (for formatting).
+
+## 6. Data Formats
+
+Given a data format with the following entries: 
+
+```
+Name: Albert Einstein | Address: Light Avenue | Phone: 5467687
+Name: Albert Brown | Address: Brown Street | Phone: 2257896
+Name: Robert Oppenheimer | Address: Nuclear Street | Phone: 543768789
+```
+
+If this data set were to be filtered using the query: `*Albert*`, we can format the data using the following options:
+
+#### 6.1 Table
+
+```
+╒═════════════════╤══════════════╤════════════╕
+│ Name            │ Address      │      Phone │
+╞═════════════════╪══════════════╪════════════╡
+│ Albert Einstein │ Light Avenue │ 7887543543 │
+├─────────────────┼──────────────┼────────────┤
+│ Albert Brown    │ Brown Street │    2257896 │
+╘═════════════════╧══════════════╧════════════╛
+```
+
+#### 6.2 Raw
+
+```
+QUERY RESULTS:
+
+[
+         0. Name: Albert Einstein, Address: Light Avenue, Phone: 7887543543,  
+         1. Name: Albert Brown, Address: Brown Street, Phone: 2257896,  
+]
+```
+
+#### 6.3 JSON
+
+```
+[
+    {
+        "name": "Albert Einstein",
+        "address": "Light Avenue",
+        "phone_number": "7887543543"
+    },
+    {
+        "name": "Albert Brown",
+        "address": "Brown Street",
+        "phone_number": "2257896"
+    }
+]
+```
+
+#### 6.4 YAML
+
+```
+-   name: Albert Einstein
+    address: Light Avenue
+    phone_number: '7887543543'
+-   name: Albert Brown
+    address: Brown Street
+    phone_number: '2257896'
+```
+
+## 7. Dependencies
 
 This project depends on the following modules and libraries:
 
