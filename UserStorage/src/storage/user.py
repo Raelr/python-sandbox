@@ -1,7 +1,4 @@
-from json import JSONEncoder
-import json
-
-class User(object):
+class User():
     name = ""
     address = ""
     phone_number = 0
