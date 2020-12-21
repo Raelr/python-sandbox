@@ -1,24 +1,16 @@
 from user import User
-from serialisation.json_serialiser import JSONSerialiser
-from serialisation.yaml_serialiser import YAMLSerialiser
-from formatting.table_formatter import TableFormatter
-from formatting.raw_formatter import RawFormatter
+from serialisation.serialiser import Serialiser
+from formatting.formatter import Formatter
+from tabulate import tabulate
 import utils.file_utils as utils
 import fnmatch
-from tabulate import tabulate
 
 class UserStorage:
 
     def __init__(self):
         self.storage = []
-        self.serialisers = {
-            'json' : JSONSerialiser(),
-            'yaml' : YAMLSerialiser()
-        }
-        self.formatters = {
-            'table' : TableFormatter(),
-            'raw'   : RawFormatter()
-        }
+        self.serialiser = Serialiser()
+        self.formatter = Formatter()
     
     def add_user(self, name, address, phone):
         user = User(name, address, phone)
@@ -41,11 +33,11 @@ class UserStorage:
         return results if len(results) > 0 else 'No matching entry found!'
     
     def save_users(self, file_type):
-        string = self.serialisers[file_type].serialise(self.storage)
+        string = self.serialiser.serialise(self.storage, file_type)
         utils.write_contents_to_file("../data/user_storage." + file_type, string)
     
     def load_users(self, file_type):
-        users = self.serialisers[file_type].deserialise(utils.read_file_contents('../data/user_storage.' + file_type))
+        users = self.serialiser.deserialise(utils.read_file_contents('../data/user_storage.' + file_type), file_type)
         for val in users:
             self.add_user(val['name'], val['address'], val['phone_number'])
     
@@ -55,13 +47,10 @@ class UserStorage:
     def format_result(self, result_format, data):
         result_str = ''
 
-        if self.formatters.get(result_format):
-            format_data = []
-            for user in data:
-                format_data.append(user.to_array())
-            result_str = self.formatters[result_format].format(format_data, ["Name", "Address", "Phone"])
-        elif self.serialisers.get(result_format):
-            result_str = self.serialisers[result_format].serialise(data)
+        if self.formatter.is_supported(result_format):
+            result_str = self.formatter.format_data(data,['Name','Address','Phone'], result_format)
+        elif self.serialiser.is_supported(result_format):
+            result_str = self.serialiser.serialise(data, result_format)
         else:
             result_str = 'ERROR: support for format: ' + result_format + ' does not exist!'
 
@@ -69,11 +58,10 @@ class UserStorage:
     
     def get_supported_formats(self):
         format_list = ''
-        
-        if (len(self.formatters) > 0 or len(self.serialisers) > 0):
-            format_list += '\nData Formats Supported: \n'
-            format_list += self.format_list(self.formatters)
-            format_list += self.format_list(self.serialisers)
+
+        format_list += '\nData Formats Supported: \n'
+        format_list += self.format_list(self.formatter.get_supported_formats())
+        format_list += self.format_list(self.serialiser.get_supported_formats())
 
         return format_list
     
