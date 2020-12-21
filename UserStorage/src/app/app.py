@@ -5,13 +5,18 @@
 # options can be found in the show_menu() function.                                                        #
 # -------------------------------------------------------------------------------------------------------- #
 
-from user_storage import UserStorage
+from storage.user_storage import UserStorage
+from serialisation.serialiser import Serialiser
+from formatting.formatter import Formatter
+import utils.file_utils as utils
 
 class App():
 
     # Simple constructor for the CLI Application
     def __init__(self):
         self.storage = UserStorage()
+        self.serialiser = Serialiser()
+        self.formatter = Formatter()
         self.running = True
     
     # Runs the main loop for the application
@@ -69,12 +74,11 @@ class App():
         # Get all the attributes for users
         name = self.get_user_input('What is the user\'s name? ')
         address = self.get_user_input('What is the user\'s address? ')
-        phone = int(self.get_user_input('What is the user\'s phone number? (No spaces, please!) '))
+        phone = self.get_user_input('What is the user\'s phone number? (No spaces, please!) ')
 
         print('Adding user: {0} with address: {1} and phone number: {2}...'.format(name, address, phone))
         # Confirm that the user is OK with the data entered. 
         if self.is_user_confirmed():
-            # Add the new user! 
             self.storage.add_user(name, address, phone)
 
     # Method for handling user filter commands. Uses a Glob search to find users. 
@@ -83,42 +87,68 @@ class App():
         filter_command = self.get_user_input('What Glob rules would you like to apply? ')
         format_type = self.get_user_input('What format would you like the data formatted in (json, yaml, raw, table)? ')
 
+        results = self.storage.filter_users(filter_command)
+        if len(results) == 0:
+            print('No results found for query: ' + filter_command)
+            return
+
+        data = 'ERROR: The Specified format is not supported!'
+        if self.serialiser.is_supported(format_type):
+            data = self.serialiser.serialise(results, format_type)
+        elif self.formatter.is_supported(format_type):
+            data = self.formatter.format_data(results,['Name','Address','Phone'],format_type)
+
         # Get the user list and format according to the user's specification:
-        print(self.storage.format_result(format_type, self.storage.filter_users(filter_command)))
+        print('\n'+data+'\n')
 
     # Method for handling user saving to json or yaml
     def save_users(self):
-        # Get the format we want to serialise the data to:
+
         data_format = self.get_user_input('What format would you like the data saved to (json or yaml)? ')
+
+        message = 'ERROR: Data format: ' + data_format + ' is not supported!'
+        if self.serialiser.is_supported(data_format):
+            data = self.serialiser.serialise(self.storage.get_all_users(), data_format)
+            utils.write_contents_to_file("../data/user_storage." + data_format, data)
+            message = 'Saving Data to ' + data_format + ' format'
         
-        # Save the user
-        self.storage.save_users(data_format)
-        print('Saving Data to ' + data_format + ' format')
+        print('\n'+message+'\n')
     
     # Method for handling user loading from json or yaml
     def load_users(self):
         # Get the format we want to de-serialise the data from:
         data_format = self.get_user_input('What format would you like the to be loaded from (json or yaml)? ')
         
+        message = 'ERROR: Data format: ' + data_format + ' is not supported!'
         # Load the stored users
-        self.storage.load_users(data_format)
-        print('Loaded Data from ' + data_format + ' source!')
+        if self.serialiser.is_supported(data_format):
+            users = self.serialiser.deserialise(utils.read_file_contents('../data/user_storage.' + data_format), data_format)
+            for val in users:
+                self.storage.add_user(val['name'], val['address'], val['phone_number'])
+            message = 'Loaded Data from ' + data_format + ' source!'
+
+        print('\n'+message+'\n')
     
     # Method for returning and printing 
     def show_formats(self):
-        print(self.storage.get_supported_formats())
+        format_list = ''
+
+        format_list += '\nData Formats Supported: \n'
+        format_list += self.formatter.format_list(self.formatter.get_supported_formats())
+        format_list += self.formatter.format_list(self.serialiser.get_supported_formats())
+  
+        print(format_list)
     
     # Helper method for confirming user input (used for verifying their intent)
     def is_user_confirmed(self):
-        # Get user confirmation
-        user_input = self.get_user_input('Are you sure sure you want to proceed (y/n)? ')
-        
-        # Fail unless user inputs y
-        should_continue = False
+        user_input = ''
 
-        if user_input == 'y' or user_input == 'Y':
-            should_continue = True
-        else:
-            print('Returning to menu...')
+        while True:
+            user_input = self.get_user_input('\nAre you sure sure you want to proceed (y/n)? \n')
+            
+            if user_input == 'y' or user_input == 'n':
+                break
+            else:
+                print('\nInvalid input please try again!')
         
-        return should_continue
+        return user_input == 'y'

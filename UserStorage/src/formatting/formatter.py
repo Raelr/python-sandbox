@@ -26,3 +26,10 @@ class Formatter():
         for fmt in self.formatters:
             formats.append(fmt)
         return formats
+    
+    def format_list(self, data):
+        result = ''
+        if len(data) > 0:
+            for value in data:
+                result += '   - {0}\n'.format(value)
+        return result

@@ -21,7 +21,7 @@ The main challenges that were anticipated when creating this API are summarised 
 * <b>Finding the correct packages:</b> Python has a myriad of different modules which can be used to automate certain processes. Finding the right one is a time consuming and somewhat overwhelming process at times. This was overcome by sticking to a simple rule: where possible, use official Python packages. 
 * <b>Working out what should be custom made, and what should be imported:</b> Since Python does have such a large variety of content, it's often hard to know what you need to write, and what you can just import. The decision was eventually made to custom build all modules that require application-specific logic. For example, the actual `UserStorage` object would need my own custom logic, but a `YAML` parser, which is complex beyond the scope of the project, would be imported. 
 * <b>Separating code into Modules:</b> Separating responsibilities between every module would prove to be an interesting problem to solve. In theory, the `UserStorage` object could handle all logic, but this would make the class incredibly large and complex. 
-     * A decision was eventually made to separate the modules into four primary modules: `UserStorage`, `Utils`, `Serialisation` and `Formatting`. Each of these would handle their specific tasks and would be combined in the CLI application.
+     * A decision was eventually made to separate the modules into four primary modules: `UserStorage`, `App`, `Utils`, `Serialisation` and `Formatting`. Each of these would handle their specific tasks and would be combined within the CLI application.
 
 ## 3. API Overview
 

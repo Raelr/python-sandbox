@@ -1,7 +1,9 @@
 import unittest
-from user_storage import UserStorage
 import utils.file_utils as utils
 import os
+from storage.user_storage import UserStorage
+from serialisation.serialiser import Serialiser
+from formatting.formatter import Formatter
 
 class TestUserStorage(unittest.TestCase):
 
@@ -38,47 +40,56 @@ class TestUserStorage(unittest.TestCase):
     # Test serialisation to both JSON and YAML
     def test_saving_files_json(self):
         user_storage = UserStorage()
+        serialiser = Serialiser()
 
         self.populate_storage(user_storage)
 
-        self.save_and_test('json', user_storage)
+        self.save_and_test('json', user_storage, serialiser)
 
-        self.save_and_test('yaml', user_storage)
+        self.save_and_test('yaml', user_storage, serialiser)
 
     # Test de-serialisation from JSON and YAML
     def test_loading_files(self):
         user_storage = UserStorage()
+        serialiser = Serialiser()
 
         self.populate_storage(user_storage)
 
-        self.save_and_load_file('json', user_storage)
+        self.save_and_load_file('json', user_storage, serialiser)
 
-        self.save_and_load_file('yaml', user_storage)
+        self.save_and_load_file('yaml', user_storage, serialiser)
 
     # Tests to see that storage formats are being fount here. 
     def test_get_supported_formats(self):
-        user_storage = UserStorage()
-        self.assertNotEqual(user_storage.get_supported_formats(), '')
+        serialiser = Serialiser()
+        formatter = Formatter()
+
+        self.assertNotEqual(serialiser.get_supported_formats(), '')
+        self.assertNotEqual(formatter.get_supported_formats(), '')
     
     # UTILITY FUNCTIONS:
 
     # Re-usable method for saving and validating that a file was created
-    def save_and_test(self, file_format, user_storage):
-        user_storage.save_users(file_format)
+    def save_and_test(self, file_format, user_storage, serialiser):
+        data = serialiser.serialise(user_storage.get_all_users(), file_format)
+        utils.write_contents_to_file("../data/user_storage." + file_format, data)
 
         self.assertEqual(os.path.exists('../data/user_storage.' + file_format), True)
 
         os.remove('../data/user_storage.' + file_format)
         
     # Re-usable method for serialising and de-serialising the user data
-    def save_and_load_file(self, file_format, user_storage):
-        user_storage.save_users(file_format)
+    def save_and_load_file(self, file_format, user_storage, serialiser):
+        data = serialiser.serialise(user_storage.get_all_users(), file_format)
+        utils.write_contents_to_file("../data/user_storage." + file_format, data)
 
         user_storage.clear_users()
 
         self.assertEqual(len(user_storage.storage), 0)
 
-        user_storage.load_users(file_format)
+        users = serialiser.deserialise(utils.read_file_contents('../data/user_storage.' + file_format), file_format)
+        for val in users:
+            user_storage.add_user(val['name'], val['address'], val['phone_number'])
 
         self.assertGreater(len(user_storage.storage), 0)
     

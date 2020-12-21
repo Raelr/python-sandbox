@@ -12,7 +12,7 @@ class User(object):
         self.phone_number = phone_number
 
     def __str__(self):
-        return '<Name: {0} | Address: {1} | Phone: {2}>'.format(self.name, self.address, self.phone_number)
+        return 'Name: {0} | Address: {1} | Phone: {2}'.format(self.name, self.address, self.phone_number)
     
     def __repr__(self):
         return str(self)
