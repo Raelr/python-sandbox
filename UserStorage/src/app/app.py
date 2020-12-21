@@ -94,7 +94,6 @@ class App():
             print('No results found for query: ' + filter_command)
             return
 
-        print(results)
         # Check which data format is needed by the user:
         data = 'ERROR: The Specified format is not supported!'
         if self.serialiser.is_supported(format_type):
