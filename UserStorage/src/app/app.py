@@ -1,4 +1,4 @@
-# ------------------------------------------------ APP.PY ------------------------------------------------ #
+# --------------------------------------------- APP.PY --------------------------------------------------- #
 # This is where the user storage API is put into action!                                                   #
 # This is a simple CLI application which allows users to add and filter users, serialise and de-serialise  #
 # users to json or yaml, and formats returned data in either a raw or table format. All available          #
@@ -45,9 +45,9 @@ class App():
     
     # Processes user input and translates it into decisions:
     def process_menu_options(self):
-        # Get the user's menu choice
         user_input = self.get_user_input('What would you like to do? ')
 
+        # Process the user's input into methods
         if user_input == '1':
             self.add_user()
         elif user_input == '2':
@@ -92,13 +92,13 @@ class App():
             print('No results found for query: ' + filter_command)
             return
 
+        # Check which data format is needed by the user:
         data = 'ERROR: The Specified format is not supported!'
         if self.serialiser.is_supported(format_type):
             data = self.serialiser.serialise(results, format_type)
         elif self.formatter.is_supported(format_type):
             data = self.formatter.format_data(results,['Name','Address','Phone'],format_type)
 
-        # Get the user list and format according to the user's specification:
         print('\n'+data+'\n')
 
     # Method for handling user saving to json or yaml
@@ -107,6 +107,7 @@ class App():
         data_format = self.get_user_input('What format would you like the data saved to (json or yaml)? ')
 
         message = 'ERROR: Data format: ' + data_format + ' is not supported!'
+        # Only write the file if the requested format is supported.
         if self.serialiser.is_supported(data_format):
             data = self.serialiser.serialise(self.storage.get_all_users(), data_format)
             utils.write_contents_to_file("../data/user_storage." + data_format, data)
@@ -120,9 +121,10 @@ class App():
         data_format = self.get_user_input('What format would you like the to be loaded from (json or yaml)? ')
         
         message = 'ERROR: Data format: ' + data_format + ' is not supported!'
-        # Load the stored users
+        # Only load the file if the requested format is supported. 
         if self.serialiser.is_supported(data_format):
             users = self.serialiser.deserialise(utils.read_file_contents('../data/user_storage.' + data_format), data_format)
+            # Iterate over the returned array and add them to storage
             for val in users:
                 self.storage.add_user(val['name'], val['address'], val['phone_number'])
             message = 'Loaded Data from ' + data_format + ' source!'
@@ -145,7 +147,6 @@ class App():
 
         while True:
             user_input = self.get_user_input('\nAre you sure sure you want to proceed (y/n)? \n')
-            
             if user_input == 'y' or user_input == 'n':
                 break
             else:

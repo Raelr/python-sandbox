@@ -107,7 +107,7 @@ This project depends on the following modules and libraries:
 
 * [`PyYaml`](https://pyyaml.org/wiki/PyYAMLDocumentation)
 * [`tabulate`](https://pypi.org/project/tabulate/)
-* `fnmatch`
-* `json`
-* `os`
-* `unittest`
+* [`fnmatch`](https://docs.python.org/3/library/fnmatch.html)
+* [`json`](https://docs.python.org/3/library/json.html)
+* [`os`](https://docs.python.org/3/library/os.html)
+* [`unittest`](https://docs.python.org/3/library/unittest.html)
